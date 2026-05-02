@@ -1,0 +1,210 @@
+---
+import Base from '~/layouts/Base.astro';
+import Masthead from '~/components/Masthead.astro';
+import Specimen from '~/components/Specimen.astro';
+
+export const prerender = true;
+---
+<Base
+  title="Abacus | case study · Dominick Amirr"
+  description="A reporting agent for NetSuite, built on Oracle's NetSuite AI Connector Service. The story of why I'm building it and what's hard about it."
+>
+  <main class="page">
+    <Masthead showHomeLink={true} />
+
+    <article class="content">
+      <header class="case-header">
+        <p class="kicker">Case study · in build</p>
+        <h1>Abacus</h1>
+        <p class="dek">A reporting agent for NetSuite. It answers controller-grade questions and shows its work.</p>
+      </header>
+
+      <div class="meta-grid">
+        <div><span class="meta-label">Role</span><span class="meta-value">Sole engineer & operator</span></div>
+        <div><span class="meta-label">Stack</span><span class="meta-value">Oracle NetSuite AI Connector · Anthropic API · Vercel</span></div>
+        <div><span class="meta-label">Status</span><span class="meta-value">Active build · 21-skill bundle live</span></div>
+        <div><span class="meta-label">Started</span><span class="meta-value">Q1 2026</span></div>
+      </div>
+
+      <section>
+        <h2>The problem</h2>
+        <p>Controllers spend an outsized share of their week answering the same shape of question. <em>What were our accrued purchases last quarter, by department?</em> <em>Why is this $43,000 swing in COGS happening?</em> <em>Who's the AR contact on our top five overdue customers?</em></p>
+        <p>The answer always exists somewhere in NetSuite. Getting to it takes a SuiteQL query against tables with thirty joinable surfaces, knowledge of which fields are populated on which transaction types, and an instinct for where the close-related noise lives. That instinct lives in maybe ten thousand people worldwide. Most controllers don't have one of them on staff.</p>
+        <p>The existing answer is a BI dashboard, built six months ago by a consultant, that almost answers the question. The controller exports it to Excel, manipulates the result, and gets to the real number forty-five minutes later.</p>
+        <p>This is the problem Abacus is built for: getting the controller from a question to a defensible answer in under a minute, without an analyst in the loop.</p>
+      </section>
+
+      <section>
+        <h2>Why now, why this stack</h2>
+        <p>In late 2025, Oracle shipped the NetSuite AI Connector Service, a hosted MCP server with read access to the NetSuite metadata model. I'd been mid-build on a custom OAuth + RESTlet integration layer when I saw the announcement, and the right move was to throw away three weeks of work and rebuild on Oracle's primitive.</p>
+        <p>The architecture that landed:</p>
+
+        <Specimen fig="Fig. 01" caption="Abacus architecture: controller question, agent loop, MCP, audit citation.">
+          <div class="placeholder">
+            <span>Architecture diagram: a hand-drawn version goes here, exported from Excalidraw or Figma to SVG.</span>
+          </div>
+        </Specimen>
+
+        <p>Three layers. The MCP server (Oracle's) handles authentication and read access to the metadata model: table names, field types, foreign-key shape. The model layer (Claude, currently) translates a question into a SuiteQL query, executes it through the connector, and composes a citation. The skill layer is the part I actually own: a 21-skill bundle that encodes the controller-grade reporting practice this is meant to replicate.</p>
+      </section>
+
+      <section>
+        <h2>Skills, not prompts</h2>
+        <p>The intellectual property in Abacus is not the LLM choice. It is not even the prompt engineering. It is the skill bundle.</p>
+        <p>A skill, in this context, is a structured artifact that encodes one piece of audit-grade reporting practice. *"Compute accrued purchases at period-end"* is a skill. So is *"reconcile unbilled receivables on capital projects against contract milestones."* So is *"explain a $X variance in COGS."* Each skill includes:</p>
+        <ul>
+          <li>The shape of the question that triggers it</li>
+          <li>The SuiteQL pattern, with the right joins and the right exclusions</li>
+          <li>The audit trail format: which records to cite, which thresholds to call out</li>
+          <li>The known traps: which transaction types to exclude, which intercompany conditions break the simple version</li>
+        </ul>
+        <p>The bundle is 21 skills today and will be 50 by Q3. Each one is roughly a week of consulting practice condensed into something a model can route to.</p>
+      </section>
+
+      <section>
+        <h2>What's hard</h2>
+        <p>Three things, in order of difficulty:</p>
+        <p><strong>The audit trail.</strong> A controller doesn't want a number. She wants a number she can defend. This means citing the GL accounts touched, the date range scoped, the exclusions applied, and doing all of it consistently across every answer. I've written about why this is the hardest part of agentic systems for finance <a href="/writing/audit-trail-is-the-product">here</a>.</p>
+        <p><strong>Materiality.</strong> A $43 variance and a $43,000 variance are the same to a token stream. They are not the same to a controller. Abacus has to recognize the difference and route differently. The small one gets a one-line explanation, the big one gets three model calls and a deeper reconciliation.</p>
+        <p><strong>Reproducibility.</strong> The same question, asked twice, has to produce the same answer. This is at odds with how LLMs work by default. The fix is mechanical: temperature 0, a stable prompt template per skill, and a regression test suite that runs on every model update.</p>
+      </section>
+
+      <section>
+        <h2>What's still rough</h2>
+        <p>Honesty section. Abacus is not done.</p>
+        <p>It can't yet handle questions that span multiple subsidiaries with different chart-of-accounts structures. It is bad at knowing when to ask a clarifying question versus making a reasonable assumption. The skill router still occasionally picks the wrong skill on adjacent questions. And the audit citation layer is more brittle than I'd like — it works for the 21 skills it's been hardened against and degrades gracefully but not gracefully enough for the questions outside that envelope.</p>
+        <p>None of these are model problems. They're software problems. They get fixed by the slow, unglamorous work I described in the audit-trail essay.</p>
+      </section>
+
+      <section>
+        <h2>What I'd build next, with a team</h2>
+        <p>Abacus is solo for now. With two engineers and a designer, the year-one roadmap is straightforward:</p>
+        <p>The skill bundle expands to fifty, covering everything in the close-and-controls envelope: accruals, intercompany, fixed assets, deferred revenue, capital projects, sales tax, multi-currency. The chat interface gets a real product surface: voice input, persistent threads, multi-turn refinement. The audit trail becomes a first-class citizen, with every answer exportable to a memo a controller can hand to her auditor without rewriting it.</p>
+        <p>The strategic shape is what makes this worth building. NetSuite has 38,000 customers. Maybe 10,000 of them have a controller who'd buy this. The serviceable market is real, the wedge is sharp, and the moat (the skill bundle) compounds with every implementation.</p>
+      </section>
+
+      <p class="back-link"><a href="/">← Back to home</a></p>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .case-header {
+    margin-bottom: 3.5rem;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .case-header h1 {
+    font-family: var(--display);
+    font-size: clamp(3rem, 5.5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.022em;
+    margin-bottom: 1rem;
+  }
+
+  .dek {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: clamp(1.3rem, 2vw, 1.6rem);
+    color: var(--ink-soft);
+    line-height: 1.35;
+    max-width: 36rem;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem 2rem;
+    padding: 2rem 0;
+    margin-bottom: 4rem;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .meta-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 0.6125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .meta-value {
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+
+  article h2 {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+    margin-top: 0;
+    color: var(--ink);
+  }
+
+  article ul {
+    list-style: none;
+    margin: 1rem 0;
+    padding-left: 0;
+  }
+
+  article ul li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 36rem;
+  }
+
+  article ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .placeholder {
+    width: 100%; height: 100%;
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        var(--bg-shade) 0,
+        var(--bg-shade) 14px,
+        var(--rule-soft) 14px,
+        var(--rule-soft) 15px
+      );
+    color: var(--ink-mute);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .back-link {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,57 @@
+---
+export interface Props {
+  name: string;
+  role: string;
+}
+const { name, role } = Astro.props;
+---
+<blockquote>
+  <p><slot /></p>
+  <cite>
+    <span class="name">{name}</span>
+    <span class="role">{role}</span>
+  </cite>
+</blockquote>
+
+<style>
+  blockquote {
+    padding: 1.25rem 0.5rem;
+    border-bottom: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    max-width: 36rem;
+    transition: background 0.2s ease;
+  }
+
+  blockquote:hover { background: var(--accent-soft); }
+  blockquote:last-of-type { border-bottom: none; }
+
+  blockquote p {
+    font-family: var(--body);
+    font-size: 0.92rem;
+    font-style: normal;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 0.5rem;
+  }
+
+  cite {
+    font-style: normal;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .role {
+    font-family: var(--mono);
+    font-size: 0.6125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+</style>

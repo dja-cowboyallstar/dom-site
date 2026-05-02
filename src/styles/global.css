@@ -1,0 +1,256 @@
+@import './fonts.css';
+
+/* ─────────────────────────────────────────────────────────────
+   Design tokens — light (default) + dark/evening
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #F8F5EE;
+  --bg-shade:  #F0EBE0;
+  --bg-elevated: #FFFFFF;
+  --ink:       #2C2825;
+  --ink-soft:  #5A544C;
+  --ink-mute:  #9A948A;
+  --rule:      #DDD7C7;
+  --rule-soft: #EBE6D8;
+  --accent:    #9B3322;
+  --accent-soft: rgba(155, 51, 34, 0.08);
+
+  --display: 'Instrument Serif', 'Times New Roman', Georgia, serif;
+  --body:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --max:    1240px;
+  --pad:    3rem;
+  --pad-sm: 1.5rem;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg:        #14110D;
+  --bg-shade:  #1C1814;
+  --bg-elevated: #252019;
+  --ink:       #E8E0D0;
+  --ink-soft:  #B8AC97;
+  --ink-mute:  #7E776B;
+  --rule:      #2E2820;
+  --rule-soft: #221E18;
+  --accent:    #D4654F;
+  --accent-soft: rgba(212, 101, 79, 0.1);
+
+  color-scheme: dark;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Reset
+   ───────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+img, video, svg { max-width: 100%; height: auto; display: block; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, textarea { font: inherit; color: inherit; }
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  font-feature-settings: "kern", "liga";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Layout primitives
+   ───────────────────────────────────────────────────────────── */
+.page {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 6rem var(--pad) 4rem;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 7rem;
+}
+
+@media (max-width: 920px) {
+  .page {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    padding: 3rem var(--pad-sm) 2rem;
+  }
+}
+
+.content { max-width: 38rem; }
+
+/* ─────────────────────────────────────────────────────────────
+   Type — display, body, mono, lede
+   ───────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-weight: 400; letter-spacing: -0.012em; }
+
+.epigraph {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(1.6rem, 2.5vw, 2rem);
+  line-height: 1.25;
+  color: var(--accent);
+  margin-bottom: 1.75rem;
+  max-width: 32rem;
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 2.6vw, 2.05rem);
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  margin-bottom: 5rem;
+  max-width: 36rem;
+}
+
+.lede em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.section-head .title {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  color: var(--accent);
+}
+
+.section-head .meta {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+section { margin-bottom: 5rem; }
+section[id] { scroll-margin-top: 4rem; }
+
+section p {
+  margin-bottom: 1.1rem;
+  max-width: 36rem;
+  font-size: 0.975rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+section p:last-child { margin-bottom: 0; }
+
+/* ─────────────────────────────────────────────────────────────
+   Links — animated underline, accent on hover
+   ───────────────────────────────────────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  transition: background-size 0.2s ease, color 0.2s ease;
+  padding-bottom: 1px;
+}
+
+a:hover { color: var(--accent); }
+
+/* ─────────────────────────────────────────────────────────────
+   Scroll progress bar — 1px hairline at top
+   ───────────────────────────────────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 1px;
+  width: var(--scroll, 0%);
+  background: var(--accent);
+  z-index: 100;
+  pointer-events: none;
+  transition: width 50ms linear;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Theme toggle button
+   ───────────────────────────────────────────────────────────── */
+.theme-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink-mute);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  background: var(--bg-shade);
+}
+
+.theme-toggle svg { width: 14px; height: 14px; }
+
+/* ─────────────────────────────────────────────────────────────
+   View Transitions — subtle morph between pages
+   ───────────────────────────────────────────────────────────── */
+@view-transition { navigation: auto; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Entrance animation — staggered across sections
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .stagger > * {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 80ms; }
+  .stagger > *:nth-child(3) { animation-delay: 160ms; }
+  .stagger > *:nth-child(4) { animation-delay: 240ms; }
+  .stagger > *:nth-child(5) { animation-delay: 320ms; }
+  .stagger > *:nth-child(6) { animation-delay: 400ms; }
+  .stagger > *:nth-child(7) { animation-delay: 480ms; }
+  .stagger > *:nth-child(n+8) { animation-delay: 560ms; }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Print — make sure CV-print looks reasonable
+   ───────────────────────────────────────────────────────────── */
+@media print {
+  .theme-toggle, .scroll-progress, .ask-abacus, video { display: none; }
+  body { background: white; color: black; }
+}

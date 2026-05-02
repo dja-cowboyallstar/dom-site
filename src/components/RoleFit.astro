@@ -1,0 +1,233 @@
+---
+---
+<section class="role-fit" id="role-fit" aria-labelledby="fit-heading">
+  <header class="section-head">
+    <span class="title" id="fit-heading">Role fit</span>
+    <span class="meta">AI analysis</span>
+  </header>
+
+  <p class="intro">
+    Paste a job description. Claude analyzes it against Dom's background and returns an honest fit assessment.
+  </p>
+
+  <form id="fit-form" class="prompt">
+    <label for="fit-input" class="visually-hidden">Job description</label>
+    <textarea
+      id="fit-input"
+      name="jobDescription"
+      rows="3"
+      placeholder="Paste a job description here..."
+      autocomplete="off"
+      spellcheck="false"
+    ></textarea>
+    <button type="submit" id="fit-submit" aria-label="Analyze">
+      <span class="label">Analyze</span>
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 8h10M9 4l4 4-4 4"/>
+      </svg>
+    </button>
+  </form>
+
+  <div id="fit-output" class="output" aria-live="polite" hidden>
+    <div class="response" id="fit-response"></div>
+  </div>
+
+  <p class="disclaimer">
+    AI-generated analysis. Not a guarantee of qualification.
+  </p>
+</section>
+
+<script>
+  const form = document.getElementById('fit-form') as HTMLFormElement;
+  const input = document.getElementById('fit-input') as HTMLTextAreaElement;
+  const submit = document.getElementById('fit-submit') as HTMLButtonElement;
+  const output = document.getElementById('fit-output') as HTMLDivElement;
+  const response = document.getElementById('fit-response') as HTMLDivElement;
+
+  // Auto-resize textarea
+  const autosize = () => {
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 300)}px`;
+  };
+  input?.addEventListener('input', autosize);
+
+  input?.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      form?.requestSubmit();
+    }
+  });
+
+  const render = (text: string) => {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return esc(text)
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (_m, lang, code) => `<pre data-lang="${lang || ''}"><code>${code.trim()}</code></pre>`)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br/>');
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const jd = input.value.trim();
+    if (!jd || jd.length < 50) {
+      response.innerHTML = '<p class="error">Please paste a full job description (at least 50 characters).</p>';
+      output.hidden = false;
+      return;
+    }
+
+    submit.disabled = true;
+    submit.classList.add('loading');
+    output.hidden = false;
+    response.innerHTML = '<span class="thinking">Analyzing fit...</span>';
+
+    try {
+      const res = await fetch('/api/role-fit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobDescription: jd }),
+      });
+
+      if (!res.ok || !res.body) {
+        const err = await res.text().catch(() => '');
+        response.innerHTML = `<p class="error">Couldn't reach the model${err ? `: ${err}` : '.'}</p>`;
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+      response.innerHTML = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        response.innerHTML = `<p>${render(acc)}</p>`;
+      }
+    } catch {
+      response.innerHTML = '<p class="error">Network error. Try again.</p>';
+    } finally {
+      submit.disabled = false;
+      submit.classList.remove('loading');
+    }
+  });
+</script>
+
+<style>
+  .role-fit { margin-bottom: 5rem; }
+
+  .intro {
+    margin-bottom: 1.75rem;
+    color: var(--ink-soft);
+    max-width: 36rem;
+  }
+
+  .prompt {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--bg-shade);
+    transition: border-color 0.2s ease;
+    overflow: hidden;
+  }
+
+  .prompt:focus-within { border-color: var(--accent); }
+
+  textarea {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    padding: 0.95rem 1.1rem;
+    background: transparent;
+    color: var(--ink);
+    resize: none;
+    font-family: var(--body);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    min-height: 4.5rem;
+  }
+
+  textarea::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+
+  #fit-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1.1rem;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 0;
+    transition: background 0.2s ease;
+  }
+
+  #fit-submit:hover:not(:disabled) { background: var(--accent); }
+  #fit-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  #fit-submit.loading .label::after { content: '...'; }
+
+  .output {
+    margin-top: 2.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .response {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 36rem;
+  }
+
+  .response :global(p) { margin-bottom: 1rem; }
+  .response :global(strong) { font-weight: 500; color: var(--ink); }
+  .response :global(code) {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--bg-shade);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  .response :global(.thinking) {
+    color: var(--ink-mute);
+    font-style: italic;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .response :global(.error) { color: var(--accent); }
+
+  .disclaimer {
+    margin-top: 1rem;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    max-width: 36rem;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

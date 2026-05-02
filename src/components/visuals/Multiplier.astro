@@ -1,0 +1,87 @@
+---
+---
+<div class="multiplier">
+  <div class="multiplier-bar">
+    <div class="stage" style="flex: 1;">
+      <span class="stage-value">1</span>
+      <span class="stage-label">Hire</span>
+    </div>
+    <div class="stage" style="flex: 2;">
+      <span class="stage-value">20</span>
+      <span class="stage-label">First customers</span>
+    </div>
+    <div class="stage" style="flex: 2.5;">
+      <span class="stage-value">10+</span>
+      <span class="stage-label">Team</span>
+    </div>
+    <div class="stage" style="flex: 4;">
+      <span class="stage-value">100+</span>
+      <span class="stage-label">Customers</span>
+    </div>
+    <div class="stage accent" style="flex: 5;">
+      <span class="stage-value">$90M</span>
+      <span class="stage-label">Series A</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .multiplier {
+    max-width: 36rem;
+    margin: 2rem 0;
+  }
+
+  .multiplier-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    min-height: 72px;
+  }
+
+  .stage {
+    background: var(--bg-shade);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.75rem 0.25rem;
+    transition: background 0.2s ease;
+  }
+
+  .stage:hover {
+    background: var(--rule-soft);
+  }
+
+  .stage.accent {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .stage.accent:hover {
+    opacity: 0.9;
+    background: var(--accent);
+  }
+
+  .stage-value {
+    font-family: var(--display);
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stage-label {
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  .stage.accent .stage-value,
+  .stage.accent .stage-label {
+    color: var(--bg);
+  }
+</style>

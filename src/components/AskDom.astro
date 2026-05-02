@@ -1,0 +1,426 @@
+---
+import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
+---
+<div class="ask-dom" id="ask-dom">
+  <button class="ask-dom-trigger" id="ask-dom-trigger" aria-label="Learn more about Dom" onclick="document.getElementById('ask-dom-panel').hidden=false;this.classList.add('open')">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+  </button>
+
+  <div class="ask-dom-panel" id="ask-dom-panel" hidden>
+    <div class="panel-header">
+      <span class="panel-title">Learn more about Dom</span>
+      <button class="panel-close" id="ask-dom-close" type="button" aria-label="Close" onclick="document.getElementById('ask-dom-panel').hidden=true;document.getElementById('ask-dom-trigger').classList.remove('open')">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="pointer-events:none;">
+          <path d="M4 4l8 8M12 4l-8 8"/>
+        </svg>
+      </button>
+    </div>
+    <div class="panel-messages" id="ask-dom-messages">
+      <div class="msg assistant">
+        <p>Hey — ask me anything about Dom. Here are some good starting points:</p>
+      </div>
+      <div class="suggestions" id="ask-dom-suggestions">
+        {SUGGESTED_QUESTIONS.map((q) => (
+          <button type="button" class="suggestion" data-q={q}>{q}</button>
+        ))}
+      </div>
+    </div>
+    <form class="panel-input" id="ask-dom-form">
+      <textarea
+        id="ask-dom-input"
+        rows="1"
+        placeholder="Ask a question..."
+        autocomplete="off"
+        spellcheck="false"
+      ></textarea>
+      <button type="submit" id="ask-dom-submit" aria-label="Send">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script define:vars={{ qaData: JSON.stringify(QA_PAIRS), fallback: FALLBACK_RESPONSE, suggestions: SUGGESTED_QUESTIONS }}>
+  window.__domQA = { pairs: JSON.parse(qaData), fallback, suggestions };
+</script>
+
+<script>
+  function init() {
+    const trigger = document.getElementById('ask-dom-trigger') as HTMLButtonElement;
+    const panel = document.getElementById('ask-dom-panel') as HTMLDivElement;
+    const close = document.getElementById('ask-dom-close') as HTMLButtonElement;
+    const form = document.getElementById('ask-dom-form') as HTMLFormElement;
+    const input = document.getElementById('ask-dom-input') as HTMLTextAreaElement;
+    const submit = document.getElementById('ask-dom-submit') as HTMLButtonElement;
+    const messagesEl = document.getElementById('ask-dom-messages') as HTMLDivElement;
+    const suggestionsEl = document.getElementById('ask-dom-suggestions') as HTMLDivElement;
+
+    if (!trigger || !panel) return;
+
+    const qa = (window as any).__domQA;
+
+    // ─── Matching logic ──────────────────────────────
+    function findMatch(input: string) {
+      const normalized = input.toLowerCase().replace(/[?!.,]/g, '').trim();
+      const words = normalized.split(/\s+/);
+      let bestMatch: any = null;
+      let bestScore = 0;
+
+      for (const pair of qa.pairs) {
+        let score = 0;
+        for (const keyword of pair.keywords) {
+          if (normalized.includes(keyword)) {
+            score += keyword.split(/\s+/).length;
+          }
+        }
+        for (const word of words) {
+          if (pair.keywords.includes(word)) {
+            score += 0.5;
+          }
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = pair;
+        }
+      }
+      return bestScore >= 1.5 ? bestMatch : null;
+    }
+
+    // ─── Render markdown-lite ────────────────────────
+    const render = (text: string) => {
+      const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return esc(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n• /g, '<br/>• ')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br/>');
+    };
+
+    // ─── Typing animation ───────────────────────────
+    function typeResponse(bubble: HTMLDivElement, text: string) {
+      return new Promise<void>((resolve) => {
+        let i = 0;
+        const rendered = render(text);
+        // Show full text but reveal character by character
+        const words = text.split(' ');
+        let shown = '';
+        let wordIdx = 0;
+
+        const tick = () => {
+          if (wordIdx < words.length) {
+            shown += (wordIdx > 0 ? ' ' : '') + words[wordIdx];
+            wordIdx++;
+            bubble.innerHTML = `<p>${render(shown)}</p>`;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            // 2-4 words at a time for natural feel
+            if (wordIdx % 3 === 0) {
+              setTimeout(tick, 40);
+            } else {
+              setTimeout(tick, 15);
+            }
+          } else {
+            bubble.innerHTML = `<p>${render(shown)}</p>`;
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            resolve();
+          }
+        };
+        tick();
+      });
+    }
+
+    // ─── Toggle panel ───────────────────────────────
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) {
+        panel.hidden = true;
+        trigger.classList.remove('open');
+      }
+    });
+
+    // ─── Auto-resize ────────────────────────────────
+    input?.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    });
+
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form?.requestSubmit();
+      }
+    });
+
+    // ─── Handle question ────────────────────────────
+    async function ask(q: string) {
+      // Hide suggestions after first question
+      if (suggestionsEl) suggestionsEl.hidden = true;
+
+      // Add user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'msg user';
+      userBubble.innerHTML = `<p>${render(q)}</p>`;
+      messagesEl.appendChild(userBubble);
+
+      input.value = '';
+      input.style.height = 'auto';
+      submit.disabled = true;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // Add assistant bubble
+      const asstBubble = document.createElement('div');
+      asstBubble.className = 'msg assistant';
+      asstBubble.innerHTML = '<p class="thinking">...</p>';
+      messagesEl.appendChild(asstBubble);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // Brief pause for natural feel
+      await new Promise((r) => setTimeout(r, 300));
+
+      // Find match
+      const match = findMatch(q);
+      const answer = match ? match.answer : qa.fallback;
+
+      await typeResponse(asstBubble, answer);
+
+      // If fallback, show suggestions again
+      if (!match) {
+        const newSuggestions = document.createElement('div');
+        newSuggestions.className = 'suggestions';
+        qa.suggestions.forEach((s: string) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'suggestion';
+          btn.textContent = s;
+          btn.addEventListener('click', () => ask(s));
+          newSuggestions.appendChild(btn);
+        });
+        messagesEl.appendChild(newSuggestions);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      submit.disabled = false;
+    }
+
+    // ─── Suggestion clicks ──────────────────────────
+    suggestionsEl?.querySelectorAll<HTMLButtonElement>('.suggestion').forEach((btn) => {
+      btn.addEventListener('click', () => ask(btn.dataset.q || btn.textContent || ''));
+    });
+
+    // ─── Form submit ────────────────────────────────
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q) return;
+      ask(q);
+    });
+  }
+
+  // Run on initial load and after view transitions
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>
+
+<style>
+  .ask-dom {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 90;
+    font-family: var(--body);
+  }
+
+  .ask-dom-trigger {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+
+  .ask-dom-trigger:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .ask-dom-trigger.open {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .ask-dom-panel {
+    position: fixed;
+    bottom: 5rem;
+    right: 1.25rem;
+    width: 380px;
+    max-height: 70vh;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ask-dom-panel[hidden] {
+    display: none;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .panel-close {
+    color: var(--ink-mute);
+    padding: 0.5rem;
+    cursor: pointer;
+    min-width: 32px;
+    min-height: 32px;
+    display: grid;
+    place-items: center;
+  }
+
+  .panel-close:hover { color: var(--accent); }
+
+  .panel-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 200px;
+    max-height: calc(70vh - 7rem);
+  }
+
+  .msg {
+    max-width: 85%;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .msg p { margin: 0; }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 12px 12px 2px 12px;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .msg.assistant {
+    align-self: flex-start;
+    background: var(--bg-shade);
+    color: var(--ink);
+    border-radius: 12px 12px 12px 2px;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .msg :global(strong) { font-weight: 500; }
+
+  .msg .thinking {
+    color: var(--ink-mute);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  .msg .error { color: var(--accent); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Suggestions */
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-self: flex-start;
+  }
+
+  .suggestion {
+    font-family: var(--body);
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: none;
+  }
+
+  .suggestion:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .panel-input {
+    display: flex;
+    align-items: stretch;
+    border-top: 1px solid var(--rule-soft);
+    background: var(--bg-shade);
+  }
+
+  .panel-input textarea {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    padding: 0.75rem 0.85rem;
+    background: transparent;
+    color: var(--ink);
+    resize: none;
+    font-family: var(--body);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    min-height: 2.5rem;
+  }
+
+  .panel-input textarea::placeholder {
+    color: var(--ink-mute);
+  }
+
+  #ask-dom-submit {
+    padding: 0 0.85rem;
+    color: var(--ink-mute);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  #ask-dom-submit:hover:not(:disabled) { color: var(--accent); }
+  #ask-dom-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  @media (max-width: 480px) {
+    .ask-dom-panel {
+      width: calc(100vw - 2rem);
+      right: 1rem;
+      bottom: 4.5rem;
+      max-height: 60vh;
+    }
+  }
+
+  @media print {
+    .ask-dom { display: none; }
+  }
+</style>

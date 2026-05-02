@@ -1,0 +1,136 @@
+---
+export interface Props {
+  showHomeLink?: boolean;
+}
+const { showHomeLink = false } = Astro.props;
+
+---
+<aside class="masthead">
+  {showHomeLink ? (
+    <a href="/" class="name-link">
+      <h1 transition:name="dom-name">Dominick Amirr</h1>
+    </a>
+  ) : (
+    <h1 transition:name="dom-name">Dominick Amirr</h1>
+  )}
+  <p class="role">Builder, learner, tacos · New York</p>
+  <nav class="masthead-nav">
+    <a href="#top">Featured</a>
+    <a href="#experience">Experience</a>
+    <a href="#testimonials">Testimonials</a>
+    <a href="#numbers">Numbers</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</aside>
+
+<style>
+  .masthead {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+  }
+
+  @media (max-width: 920px) {
+    .masthead {
+      position: static;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .masthead-nav {
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 1.25rem;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .masthead-nav::-webkit-scrollbar { display: none; }
+  }
+
+  .name-link {
+    background: none;
+    color: inherit;
+  }
+  .name-link:hover h1 { color: var(--accent); }
+
+  .masthead h1 {
+    font-family: var(--display);
+    font-size: clamp(2.6rem, 4.6vw, 3.4rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+    transition: color 0.2s ease;
+  }
+
+  .role {
+    margin-top: 1.1rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+
+  .masthead-nav {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .masthead-nav a {
+    color: var(--ink-mute);
+    background-image: none;
+    padding: 0;
+    position: relative;
+    width: max-content;
+    transition: color 0.2s ease;
+  }
+
+  .masthead-nav a::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    width: 0;
+    height: 1px;
+    background: var(--accent);
+    transition: width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .masthead-nav a:hover {
+    color: var(--accent);
+  }
+
+  .masthead-nav a.active {
+    color: var(--ink);
+  }
+
+  .masthead-nav a.active::before {
+    width: 6px;
+  }
+</style>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.masthead-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        navLinks.forEach((link) => {
+          link.classList.toggle(
+            'active',
+            link.getAttribute('href') === `#${entry.target.id}`
+          );
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -60% 0px' });
+
+  sections.forEach((section) => observer.observe(section));
+</script>

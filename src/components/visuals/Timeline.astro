@@ -1,0 +1,100 @@
+---
+const milestones = [
+  { role: 'Bryant Park Consulting', outcome: 'Promoted in 3 months', year: '' },
+  { role: 'Leadership role', outcome: '160+ employees', year: '' },
+  { role: 'Left for AI', outcome: 'Founding hire at DualEntry', year: '2025' },
+  { role: 'Built the playbook', outcome: '20 customers, 10+ team', year: '' },
+  { role: 'Scaled', outcome: '100+ customers, $90M Series A', year: '' },
+  { role: 'Shipped', outcome: 'Abacus + Ascent', year: 'Now' },
+];
+---
+<div class="timeline">
+  {milestones.map((m, i) => (
+    <div class="milestone">
+      <div class="line-segment">
+        <div class="dot" />
+        {i < milestones.length - 1 && <div class="connector" />}
+      </div>
+      <div class="content">
+        <span class="role">{m.role}</span>
+        <span class="outcome">{m.outcome}</span>
+      </div>
+      {m.year && <span class="year">{m.year}</span>}
+    </div>
+  ))}
+</div>
+
+<style>
+  .timeline {
+    max-width: 36rem;
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .milestone {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem;
+    position: relative;
+  }
+
+  .line-segment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 12px;
+    flex-shrink: 0;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0.35rem;
+  }
+
+  .connector {
+    width: 1px;
+    flex: 1;
+    min-height: 2.5rem;
+    background: var(--rule);
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .role {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .outcome {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .year {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    margin-left: auto;
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .milestone:last-child .content {
+    padding-bottom: 0;
+  }
+</style>

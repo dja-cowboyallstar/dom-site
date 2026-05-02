@@ -1,0 +1,80 @@
+---
+const builds = [
+  { name: 'DualEntry', metric: '100+', unit: 'customers', detail: 'Founding hire, AI implementations' },
+  { name: 'Abacus', metric: '21', unit: 'skills', detail: 'NetSuite reporting agent' },
+  { name: 'Ascent', metric: '228+', unit: 'companies', detail: 'Job discovery platform' },
+];
+---
+<div class="builder-grid">
+  {builds.map((b) => (
+    <div class="build-card">
+      <span class="card-metric">{b.metric}</span>
+      <span class="card-unit">{b.unit}</span>
+      <span class="card-name">{b.name}</span>
+      <span class="card-detail">{b.detail}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .builder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    max-width: 36rem;
+    margin: 2rem 0;
+    background: var(--rule-soft);
+    border: 1px solid var(--rule-soft);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .build-card {
+    background: var(--bg);
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.2s ease;
+  }
+
+  .build-card:hover {
+    background: var(--bg-shade);
+  }
+
+  .card-metric {
+    font-family: var(--display);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .card-unit {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .card-detail {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+  }
+
+  @media (max-width: 500px) {
+    .builder-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

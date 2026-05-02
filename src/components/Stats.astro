@@ -1,0 +1,154 @@
+---
+export interface Stat {
+  value: number;
+  suffix?: string;
+  caption: string;
+  source: string;
+  ticking?: boolean;
+}
+export interface Props {
+  stats: Stat[];
+}
+const { stats } = Astro.props;
+---
+<div class="stats">
+  {stats.map((s) => (
+    <div class="stat">
+      <span class="num" data-target={s.value} data-suffix={s.suffix || ''} data-ticking={s.ticking ? 'true' : undefined}>0</span>
+      <span class="caption">{s.caption}</span>
+      <span class="source">{s.source}</span>
+    </div>
+  ))}
+</div>
+
+<script>
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = document.querySelectorAll('.stat .num') as NodeListOf<HTMLElement>;
+
+  // For ticking stats, compute final value upfront
+  const getFinalValue = (el: HTMLElement) => {
+    const base = parseInt(el.dataset.target || '0', 10);
+    if (el.dataset.ticking !== 'true') return base;
+    const epoch = new Date('2026-05-01T00:00:00Z').getTime();
+    const extra = Math.floor((Date.now() - epoch) / (12 * 60 * 60 * 1000));
+    return base + extra;
+  };
+
+  const setFinal = (el: HTMLElement) => {
+    el.textContent = getFinalValue(el).toLocaleString() + (el.dataset.suffix || '');
+  };
+
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    targets.forEach(setFinal);
+  } else {
+    const countUp = (el: HTMLElement) => {
+      const target = getFinalValue(el);
+      const suffix = el.dataset.suffix || '';
+
+      // Small numbers (under 50): fade in instead of counting
+      if (target < 50) {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.6s ease';
+        el.textContent = target.toLocaleString() + suffix;
+        requestAnimationFrame(() => { el.style.opacity = '1'; });
+        return;
+      }
+
+      // Large numbers: count up smoothly
+      const duration = 1400;
+      const start = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.floor(eased * target);
+        el.textContent = value.toLocaleString() + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          countUp(e.target as HTMLElement);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    targets.forEach((el) => obs.observe(el));
+  }
+
+  // Ticking counters: keep incrementing after initial animation
+  targets.forEach((el) => {
+    if (el.dataset.ticking !== 'true') return;
+    const suffix = el.dataset.suffix || '';
+    setInterval(() => {
+      el.textContent = getFinalValue(el).toLocaleString() + suffix;
+    }, 60000);
+  });
+</script>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 2.5rem 0;
+  }
+
+  .stat {
+    padding: 0.75rem 0.75rem;
+    border-right: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .stat:hover { background: var(--accent-soft); }
+  .stat:last-child { border-right: none; }
+
+  .num {
+    font-family: var(--display);
+    font-size: clamp(2.75rem, 5vw, 3.6rem);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.6rem;
+    font-feature-settings: "lnum";
+  }
+
+  .caption {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    line-height: 1.5;
+    display: block;
+  }
+
+  .source {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 600px) {
+    .stats {
+      grid-template-columns: 1fr 1fr;
+      padding: 1.5rem 0 0;
+    }
+    .stat {
+      padding: 1.25rem 0.5rem;
+      border-right: 1px solid var(--rule-soft);
+      border-bottom: 1px solid var(--rule-soft);
+    }
+    .stat:nth-child(2n) { border-right: none; }
+    .stat:nth-last-child(-n+2) { border-bottom: none; }
+  }
+</style>

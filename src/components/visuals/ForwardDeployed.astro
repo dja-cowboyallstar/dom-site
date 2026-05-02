@@ -1,0 +1,126 @@
+---
+const functional = [
+  { skill: 'Customer-facing delivery', proof: '10+ years, 100+ customers', link: 0 },
+  { skill: 'Startup velocity', proof: 'Pre-seed to $90M Series A', link: 1 },
+  { skill: 'Solution consulting', proof: 'ERP, Analytics and AI', link: 2 },
+  { skill: 'Delivery methodology', proof: 'Built the playbook at DualEntry', link: 3 },
+  { skill: 'Team lead', proof: 'Built high performing teams, twice', link: 4 },
+];
+
+const technical = [
+  { skill: 'LLM apps in production', proof: 'Abacus: 21 skills, audit trails', link: 0 },
+  { skill: 'Claude API + streaming', proof: 'This site, Abacus, DualEntry', link: 1 },
+  { skill: 'Context engineering', proof: 'Skill routing, prompt architecture', link: 2 },
+  { skill: 'Full-stack builder', proof: 'Astro, TypeScript, Vercel, SuiteQL', link: 3 },
+  { skill: 'AI agent design', proof: 'Abacus, Ascent, 8 automations shipped', link: 4 },
+];
+---
+<div class="fd" id="fd-visual">
+  <div class="fd-columns">
+    <div class="fd-col">
+      <div class="fd-col-head">
+        <span class="title">Functional</span>
+      </div>
+      {functional.map((item) => (
+        <div class="fd-row" data-link={item.link} data-side="left"
+          onmouseenter={`this.style.background='var(--accent-soft)';document.querySelector('.fd-row[data-link="${item.link}"][data-side="right"]').style.background='var(--accent-soft)'`}
+          onmouseleave={`this.style.background='';document.querySelector('.fd-row[data-link="${item.link}"][data-side="right"]').style.background=''`}>
+          <span class="fd-skill">{item.skill}</span>
+          <span class="fd-proof">{item.proof}</span>
+        </div>
+      ))}
+    </div>
+
+    <div class="fd-col">
+      <div class="fd-col-head">
+        <span class="title">Technical</span>
+      </div>
+      {technical.map((item) => (
+        <div class="fd-row" data-link={item.link} data-side="right"
+          onmouseenter={`this.style.background='var(--accent-soft)';document.querySelector('.fd-row[data-link="${item.link}"][data-side="left"]').style.background='var(--accent-soft)'`}
+          onmouseleave={`this.style.background='';document.querySelector('.fd-row[data-link="${item.link}"][data-side="left"]').style.background=''`}>
+          <span class="fd-skill">{item.skill}</span>
+          <span class="fd-proof">{item.proof}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <p class="fd-conclusion">Enterprise builder with deep technical and business acumen.</p>
+</div>
+
+<style>
+  .fd {
+    max-width: 38rem;
+  }
+
+  .fd-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .fd-col-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .fd-col-head .title {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    color: var(--ink);
+  }
+
+  .fd-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.65rem 0.5rem;
+    border-bottom: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    transition: background 0.25s ease, opacity 0.25s ease;
+    cursor: default;
+  }
+
+  .fd-row:last-child {
+    border-bottom: none;
+  }
+
+  .fd-skill {
+    font-size: 0.92rem;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .fd-proof {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    transition: color 0.25s ease;
+  }
+
+  .fd-conclusion {
+    margin-top: 1.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  @media (max-width: 600px) {
+    .fd-columns {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

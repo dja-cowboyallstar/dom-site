@@ -1,0 +1,122 @@
+---
+const roles = [
+  {
+    name: 'DualEntry',
+    segments: [
+      { label: 'Customers', value: 55, color: 'var(--accent)' },
+      { label: 'Team', value: 15, color: 'var(--ink-soft)' },
+      { label: 'Revenue', value: 30, color: 'var(--ink-mute)' },
+    ],
+  },
+  {
+    name: 'Bryant Park',
+    segments: [
+      { label: 'Customers', value: 30, color: 'var(--accent)' },
+      { label: 'Team', value: 40, color: 'var(--ink-soft)' },
+      { label: 'Revenue', value: 20, color: 'var(--ink-mute)' },
+    ],
+  },
+  {
+    name: 'Projects',
+    segments: [
+      { label: 'Products', value: 45, color: 'var(--accent)' },
+      { label: 'Skills/Integrations', value: 40, color: 'var(--ink-soft)' },
+      { label: 'Users', value: 15, color: 'var(--ink-mute)' },
+    ],
+  },
+];
+---
+<div class="impact-stack">
+  {roles.map((role) => (
+    <div class="stack-row">
+      <span class="stack-label">{role.name}</span>
+      <div class="stack-bar">
+        {role.segments.map((seg) => (
+          <div
+            class="segment"
+            style={`flex: ${seg.value}; background: ${seg.color};`}
+            title={`${seg.label}: ${seg.value}%`}
+          />
+        ))}
+      </div>
+    </div>
+  ))}
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background: var(--accent);" /> Customers / Products</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--ink-soft);" /> Team / Skills</span>
+    <span class="legend-item"><span class="swatch" style="background: var(--ink-mute);" /> Revenue / Users</span>
+  </div>
+</div>
+
+<style>
+  .impact-stack {
+    max-width: 36rem;
+    margin: 2rem 0;
+  }
+
+  .stack-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .stack-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    width: 6.5rem;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .stack-bar {
+    flex: 1;
+    display: flex;
+    height: 28px;
+    border-radius: 4px;
+    overflow: hidden;
+    gap: 1px;
+  }
+
+  .segment {
+    transition: opacity 0.2s ease;
+    min-width: 4px;
+  }
+
+  .segment:hover {
+    opacity: 0.8;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    margin-left: 7.5rem;
+  }
+
+  .legend-item {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  @media (max-width: 500px) {
+    .stack-label { width: 4.5rem; font-size: 0.55rem; }
+    .legend { margin-left: 5.5rem; flex-wrap: wrap; }
+  }
+</style>

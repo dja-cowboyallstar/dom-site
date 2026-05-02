@@ -1,0 +1,68 @@
+---
+---
+<div class="convergence">
+  <svg viewBox="0 0 400 200" class="chart" aria-label="Finance expertise and AI capability converging over time">
+    <!-- Grid lines -->
+    <line x1="60" y1="170" x2="380" y2="170" stroke="var(--rule)" stroke-width="1"/>
+    <line x1="60" y1="30" x2="60" y2="170" stroke="var(--rule)" stroke-width="1"/>
+
+    <!-- Finance line (steady rise over 10 years) -->
+    <polyline
+      points="60,160 120,145 180,125 240,105 300,85 340,72 380,65"
+      fill="none"
+      stroke="var(--ink-soft)"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- AI line (flat then steep rise) -->
+    <polyline
+      points="60,160 120,158 180,155 240,150 300,110 340,70 380,45"
+      fill="none"
+      stroke="var(--accent)"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+
+    <!-- Convergence dot -->
+    <circle cx="340" cy="70" r="5" fill="var(--accent)" opacity="0.9"/>
+    <circle cx="340" cy="72" r="5" fill="var(--ink-soft)" opacity="0.5"/>
+
+    <!-- Now marker -->
+    <line x1="380" y1="30" x2="380" y2="170" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4,4" opacity="0.4"/>
+    <text x="380" y="24" text-anchor="middle" fill="var(--ink-mute)" font-size="9" font-family="var(--mono)" letter-spacing="0.1em">NOW</text>
+
+    <!-- Labels -->
+    <text x="62" y="185" fill="var(--ink-mute)" font-size="8" font-family="var(--mono)" letter-spacing="0.08em">2015</text>
+    <text x="375" y="185" fill="var(--ink-mute)" font-size="8" font-family="var(--mono)" letter-spacing="0.08em" text-anchor="end">2026</text>
+
+    <!-- Line labels -->
+    <text x="175" y="118" fill="var(--ink-soft)" font-size="9" font-family="var(--body)">Finance depth</text>
+    <text x="265" y="155" fill="var(--accent)" font-size="9" font-family="var(--body)" font-weight="500">AI capability</text>
+  </svg>
+  <p class="convergence-caption">10 years of domain expertise. 2 years of building with AI. The intersection is the differentiator.</p>
+</div>
+
+<style>
+  .convergence {
+    max-width: 36rem;
+    margin: 2rem 0;
+  }
+
+  .chart {
+    width: 100%;
+    height: auto;
+  }
+
+  .convergence-caption {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 0.85rem;
+    max-width: 30rem;
+  }
+</style>

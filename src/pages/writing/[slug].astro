@@ -1,0 +1,176 @@
+---
+import Base from '~/layouts/Base.astro';
+import Masthead from '~/components/Masthead.astro';
+import { getCollection, render } from 'astro:content';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const entries = await getCollection('writing');
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<Base
+  title={`${entry.data.title} | Dominick Amirr`}
+  description={entry.data.description}
+  noIndex={entry.data.draft}
+>
+  <main class="page">
+    <Masthead showHomeLink={true} />
+
+    <article class="content essay">
+      <header class="essay-header">
+        {entry.data.draft && <span class="draft-flag">Draft</span>}
+        <h1>{entry.data.title}</h1>
+        <p class="dek">{entry.data.description}</p>
+        <time datetime={entry.data.pubDate.toISOString()}>
+          {entry.data.pubDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        </time>
+      </header>
+
+      <div class="prose">
+        <Content />
+      </div>
+
+      <p class="back-link"><a href="/writing">← All writing</a></p>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .essay-header {
+    margin-bottom: 4rem;
+    position: relative;
+  }
+
+  .essay-header h1 {
+    font-family: var(--display);
+    font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.022em;
+    margin-bottom: 1rem;
+    max-width: 30rem;
+  }
+
+  .dek {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+    color: var(--ink-soft);
+    line-height: 1.4;
+    margin-bottom: 1.5rem;
+    max-width: 36rem;
+  }
+
+  .essay-header time {
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .draft-flag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.2rem 0.55rem;
+    border-radius: 2px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Prose typography for the essay body */
+  .prose :global(blockquote) {
+    margin: 2rem 0;
+    padding-left: 1.5rem;
+    border-left: 2px solid var(--accent);
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .prose :global(blockquote p) {
+    margin-bottom: 0.75rem;
+  }
+
+  .prose :global(blockquote p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .prose :global(h2) {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    margin-bottom: 1.2rem;
+    color: var(--ink);
+  }
+
+  .prose :global(p) {
+    margin-bottom: 1.2rem;
+    line-height: 1.7;
+    max-width: 36rem;
+    color: var(--ink);
+  }
+
+  .prose :global(p em) {
+    color: var(--accent);
+  }
+
+  .prose :global(p strong) {
+    font-weight: 500;
+  }
+
+  .prose :global(ul) {
+    list-style: none;
+    margin: 1.2rem 0;
+    max-width: 36rem;
+  }
+
+  .prose :global(ul li) {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.6rem;
+    line-height: 1.6;
+  }
+
+  .prose :global(ul li::before) {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .prose :global(a) {
+    color: var(--accent);
+  }
+
+  .prose :global(code) {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--bg-shade);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  .back-link {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+</style>

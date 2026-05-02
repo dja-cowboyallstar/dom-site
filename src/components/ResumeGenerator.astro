@@ -1,0 +1,262 @@
+---
+---
+<section class="resume-gen" id="resume" aria-labelledby="resume-heading">
+  <header class="section-head">
+    <span class="title" id="resume-heading">Resume on demand</span>
+    <span class="meta">AI-generated</span>
+  </header>
+
+  <p class="intro">
+    Generate a tailored resume. Optionally specify a target role or company to customize the emphasis.
+  </p>
+
+  <form id="resume-form" class="prompt-row">
+    <div class="fields">
+      <input
+        type="text"
+        id="resume-role"
+        placeholder="Target role (optional)"
+        autocomplete="off"
+      />
+      <input
+        type="text"
+        id="resume-company"
+        placeholder="Company (optional)"
+        autocomplete="off"
+      />
+    </div>
+    <button type="submit" id="resume-submit" aria-label="Generate resume">
+      <span class="label">Generate</span>
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 8h10M9 4l4 4-4 4"/>
+      </svg>
+    </button>
+  </form>
+
+  <div id="resume-output" class="output" aria-live="polite" hidden>
+    <div class="response" id="resume-response"></div>
+    <div class="resume-actions" id="resume-actions" hidden>
+      <button type="button" id="resume-print" class="action-btn">Print / Save as PDF</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  const form = document.getElementById('resume-form') as HTMLFormElement;
+  const roleInput = document.getElementById('resume-role') as HTMLInputElement;
+  const companyInput = document.getElementById('resume-company') as HTMLInputElement;
+  const submit = document.getElementById('resume-submit') as HTMLButtonElement;
+  const output = document.getElementById('resume-output') as HTMLDivElement;
+  const response = document.getElementById('resume-response') as HTMLDivElement;
+  const actions = document.getElementById('resume-actions') as HTMLDivElement;
+  const printBtn = document.getElementById('resume-print') as HTMLButtonElement;
+
+  const render = (text: string) => {
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return esc(text)
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (_m, lang, code) => `<pre data-lang="${lang || ''}"><code>${code.trim()}</code></pre>`)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\n- /g, '\n• ')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br/>');
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    submit.disabled = true;
+    submit.classList.add('loading');
+    output.hidden = false;
+    actions.hidden = true;
+    response.innerHTML = '<span class="thinking">Generating resume...</span>';
+
+    try {
+      const res = await fetch('/api/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetRole: roleInput.value.trim(),
+          targetCompany: companyInput.value.trim(),
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        const err = await res.text().catch(() => '');
+        response.innerHTML = `<p class="error">Couldn't reach the model${err ? `: ${err}` : '.'}</p>`;
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+      response.innerHTML = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        response.innerHTML = `<p>${render(acc)}</p>`;
+      }
+
+      actions.hidden = false;
+    } catch {
+      response.innerHTML = '<p class="error">Network error. Try again.</p>';
+    } finally {
+      submit.disabled = false;
+      submit.classList.remove('loading');
+    }
+  });
+
+  printBtn?.addEventListener('click', () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Resume - Dominick Amirr</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; font-size: 11pt; line-height: 1.45; color: #181613; max-width: 700px; margin: 2rem auto; padding: 0 1.5rem; }
+          strong { font-weight: 600; }
+          p { margin: 0 0 0.6rem; }
+          ul { margin: 0 0 0.6rem; padding-left: 1.2rem; }
+        </style>
+      </head>
+      <body>${response.innerHTML}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  });
+</script>
+
+<style>
+  .resume-gen { margin-bottom: 5rem; }
+
+  .intro {
+    margin-bottom: 1.75rem;
+    color: var(--ink-soft);
+    max-width: 36rem;
+  }
+
+  .prompt-row {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--bg-shade);
+    transition: border-color 0.2s ease;
+    overflow: hidden;
+  }
+
+  .prompt-row:focus-within { border-color: var(--accent); }
+
+  .fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fields input {
+    border: 0;
+    outline: 0;
+    padding: 0.75rem 1.1rem;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 0.95rem;
+  }
+
+  .fields input:first-child {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .fields input::placeholder {
+    color: var(--ink-mute);
+    font-style: italic;
+  }
+
+  #resume-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1.1rem;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 0;
+    transition: background 0.2s ease;
+  }
+
+  #resume-submit:hover:not(:disabled) { background: var(--accent); }
+  #resume-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  #resume-submit.loading .label::after { content: '...'; }
+
+  .output {
+    margin-top: 2.25rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .response {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--ink);
+    max-width: 36rem;
+  }
+
+  .response :global(p) { margin-bottom: 1rem; }
+  .response :global(strong) { font-weight: 500; color: var(--ink); }
+  .response :global(code) {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--bg-shade);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  .response :global(.thinking) {
+    color: var(--ink-mute);
+    font-style: italic;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  .response :global(.error) { color: var(--accent); }
+
+  .resume-actions {
+    margin-top: 1.5rem;
+  }
+
+  .action-btn {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .action-btn:hover { opacity: 0.85; }
+
+  @media (max-width: 600px) {
+    .prompt-row { flex-direction: column; }
+    #resume-submit {
+      padding: 0.75rem;
+      justify-content: center;
+    }
+  }
+</style>

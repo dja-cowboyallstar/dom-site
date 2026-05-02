@@ -1,0 +1,121 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '~/styles/global.css';
+import AskDom from '~/components/AskDom.astro';
+
+export interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  noIndex?: boolean;
+}
+
+const {
+  title,
+  description = 'Dominick Amirr | engineer building agents for finance systems.',
+  ogImage = '/og-card.png',
+  noIndex = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    {noIndex && <meta name="robots" content="noindex" />}
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site)} />
+    <meta property="og:url" content={canonical} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.site)} />
+
+    <!-- Preload the two most critical fonts -->
+    <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/InstrumentSerif-Regular.ttf" as="font" type="font/ttf" crossorigin />
+
+    <!-- Theme bootstrap — runs before paint to avoid FOUC -->
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const theme = stored || system;
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body>
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg viewBox="0 0 16 16" fill="currentColor" id="theme-icon">
+        <!-- Filled in by JS based on current state -->
+      </svg>
+    </button>
+
+    <slot />
+
+    <AskDom />
+
+    <script>
+      // ─── Scroll progress hairline ────────────────────────
+      const progress = document.getElementById('scroll-progress');
+      const onScroll = () => {
+        const h = document.documentElement;
+        const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+        progress?.style.setProperty('--scroll', `${(scrolled * 100).toFixed(2)}%`);
+      };
+      document.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      // ─── Theme toggle ────────────────────────────────────
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      const icon = document.getElementById('theme-icon');
+
+      const sunPath = '<path d="M8 11.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM8 1v1.5M8 13.5V15M3.05 3.05l1.06 1.06M11.89 11.89l1.06 1.06M1 8h1.5M13.5 8H15M3.05 12.95l1.06-1.06M11.89 4.11l1.06-1.06" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>';
+      const moonPath = '<path d="M13 9.5A5.5 5.5 0 016.5 3a1 1 0 00-1.4-.92A6.5 6.5 0 1013.92 11a1 1 0 00-.92-1.5z" fill="currentColor"/>';
+
+      const renderIcon = () => {
+        if (icon) icon.innerHTML = root.dataset.theme === 'dark' ? sunPath : moonPath;
+      };
+      renderIcon();
+
+      toggle?.addEventListener('click', () => {
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        localStorage.setItem('theme', next);
+        renderIcon();
+      });
+
+      // Re-bind after View Transitions navigations
+      document.addEventListener('astro:after-swap', () => {
+        const stored = localStorage.getItem('theme');
+        const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.dataset.theme = stored || system;
+        renderIcon();
+        onScroll();
+      });
+    </script>
+  </body>
+</html>

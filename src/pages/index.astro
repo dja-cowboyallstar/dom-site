@@ -1,0 +1,261 @@
+---
+import Base from '~/layouts/Base.astro';
+import Masthead from '~/components/Masthead.astro';
+import PullQuote from '~/components/PullQuote.astro';
+import Specimen from '~/components/Specimen.astro';
+import Stats from '~/components/Stats.astro';
+import AskAbacus from '~/components/AskAbacus.astro';
+import ForwardDeployed from '~/components/visuals/ForwardDeployed.astro';
+
+export const prerender = true;
+---
+<Base
+  title="Dominick Amirr | AI agents for finance"
+  description="AI builder with 10+ years leading business transformations. Shipping Ascent, Abacus, and DualEntry."
+>
+  <main class="page">
+    <Masthead />
+
+    <article class="content stagger">
+
+      <!-- ─── Hero / Thesis ────────────────────────────── -->
+      <section id="top" class="hero">
+        <p class="lede">
+          Functional and technical consultant turned AI builder with 10+ years leading business transformations. Built <em>Ascent</em>, <em>Abacus</em> and automating at <em>DualEntry</em>.
+        </p>
+      </section>
+
+      <!-- ─── Visual ──────────────────────────────────── -->
+      <section id="visual">
+        <ForwardDeployed />
+      </section>
+
+      <!-- ─── Featured: Ascent ──────────────────────────── -->
+      <section id="featured" class="featured">
+        <header class="section-head">
+          <span class="title">Featured: Ascent</span>
+        </header>
+        <p>
+          Find your next role at an AI or frontier-tech company, faster. Ascent indexes 228+ companies, classifies every posting by function and seniority, identifies the hiring team, and generates personalized learning paths and resume improvements for the jobs you save. Live at <a href="https://career-ascent.io">career-ascent.io</a>.
+        </p>
+        <Specimen fig="Fig. 01" caption="Ascent's filter UI in motion.">
+          <video autoplay loop muted playsinline>
+            <source src="/assets/ascent-demo.mp4" type="video/mp4" />
+          </video>
+        </Specimen>
+      </section>
+
+      <!-- ─── Ask Abacus — live demo ───────────────────── -->
+      <AskAbacus />
+
+      <!-- ─── Work experience ─────────────────────────── -->
+      <section id="experience">
+        <header class="section-head">
+          <span class="title">Work experience</span>
+          <span class="meta">DualEntry · Abacus · Ascent</span>
+        </header>
+
+        <div class="work-entry">
+          <h3>
+            <span class="name">DualEntry</span>
+            <span class="status">2025 – Present</span>
+          </h3>
+          <p>Joined at the pre-seed as the founding hire for AI implementations. Built deployment methodology centered around AI. Onboarded the first 20 customers. The company raised a $90M Series A.</p>
+        </div>
+
+        <div class="work-entry">
+          <h3>
+            <span class="name">Abacus</span>
+            <span class="status">Project</span>
+          </h3>
+          <p>Ask your NetSuite instance controller-grade questions and get answers you can defend. Built on Oracle's AI Connector Service with 21 skills covering accrued purchases, unbilled receivables, intercompany eliminations, and more. Every answer includes a full audit trail.</p>
+        </div>
+
+        <div class="work-entry">
+          <h3>
+            <span class="name">Ascent</span>
+            <span class="status">Project</span>
+          </h3>
+          <p>Find your next role at an AI or frontier-tech company, faster. Indexes 228+ companies, classifies every posting by function and seniority, identifies the hiring team, and generates personalized learning paths and resume improvements for the jobs you save.</p>
+        </div>
+
+        <div class="work-entry">
+          <h3>
+            <span class="name">Bryant Park Consulting</span>
+            <span class="status">Early hire</span>
+          </h3>
+          <p>Early hire at a top Oracle implementation partner. Started as Principal Consultant, promoted to Engagement Manager within three months. Left in a leadership role with 160+ employees to work with AI.</p>
+        </div>
+      </section>
+
+
+      <!-- ─── Testimonials ───────────────────────────── -->
+      <section id="testimonials">
+        <header class="section-head">
+          <span class="title">What others say</span>
+          <span class="meta">Testimonials</span>
+        </header>
+        <PullQuote name="Customer" role="CFO">
+          "He quickly understood our business, guided us through every step, and made a complex process feel simple."
+        </PullQuote>
+        <PullQuote name="Direct Report" role="Principal Consultant">
+          "His depth of knowledge in NetSuite is unmatched. He brings the insight and experience of someone who's been in the trenches as a seasoned consultant and knows what it takes to deliver."
+        </PullQuote>
+        <PullQuote name="Partner" role="Solution Consultant">
+          "Great job today. Fun watching you in that tool."
+        </PullQuote>
+        <PullQuote name="Manager" role="Co-Founder, DualEntry">
+          "A lot to learn from Dom. We should demo as good as this on our calls."
+        </PullQuote>
+      </section>
+
+      <!-- ─── By the numbers ───────────────────────────── -->
+      <section id="numbers">
+        <header class="section-head">
+          <span class="title">By the numbers</span>
+          <span class="meta">Estimated figures</span>
+        </header>
+        <Stats stats={[
+          { value: 8,    suffix: 'M+', caption: 'Tokens used',            source: 'early AI adopter' },
+          { value: 8,                   caption: 'Automations shipped',    source: 'Ascent, Abacus & DualEntry' },
+          { value: 10,   suffix: '+',   caption: 'Years',                  source: 'leading enterprise change' },
+          { value: 4200,                caption: 'Coffees consumed',       source: 'and counting', ticking: true },
+        ]} />
+      </section>
+
+      <!-- ─── About me ──────────────────────────────────── -->
+      <section id="about">
+        <header class="section-head">
+          <span class="title">About me</span>
+        </header>
+        <p>I'm Dom. I'm a relentless learner and builder of AI. I'm obsessed with the impact AI can have today and the future of its potential. The only things that compare to that obsession are my wife, my son, and tacos. They're everything to me. I learn fast, lead by example (in the trenches), and solve challenges through persistence and rigor.</p>
+        <p>Some hobbies of mine are building with AI, walks with my wife and son, watching Manchester United with my twin, and trying new restaurants.</p>
+      </section>
+
+
+      <!-- ─── Elsewhere / Contact ──────────────────────── -->
+      <section id="contact">
+        <header class="section-head">
+          <span class="title">Contact me</span>
+          <span class="meta">Get in touch</span>
+        </header>
+        <ul class="elsewhere">
+          <li><span class="label">Email</span> <a href="mailto:dominickjamirr@gmail.com">dominickjamirr@gmail.com</a></li>
+          <li><span class="label">LinkedIn</span> <a href="https://www.linkedin.com/in/dom-amirr/">linkedin.com/in/dom-amirr</a></li>
+          <li><span class="label">GitHub</span> <a href="https://github.com/dja-cowboyallstar">github.com/dja-cowboyallstar</a></li>
+        </ul>
+      </section>
+
+      <footer class="colophon">
+        <span>Set in <em>Instrument Serif</em> &amp; <em>Inter</em></span>
+      </footer>
+    </article>
+  </main>
+</Base>
+
+<style>
+  .hero { margin-bottom: 5rem; }
+
+  .featured .placeholder {
+    width: 100%; height: 100%;
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        var(--bg-shade) 0,
+        var(--bg-shade) 14px,
+        var(--rule-soft) 14px,
+        var(--rule-soft) 15px
+      );
+    color: var(--ink-mute);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .featured .placeholder code {
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+  }
+
+
+  .work-entry {
+    margin-bottom: 0;
+    padding: 1.75rem 1.25rem;
+    border-bottom: 1px solid var(--rule-soft);
+    border-radius: 6px;
+    transition: background 0.2s ease;
+  }
+  .work-entry:hover { background: var(--accent-soft); }
+  .work-entry:last-child { border-bottom: none; }
+
+  .work-entry h3 {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .work-entry .name { color: var(--accent); }
+
+  .work-entry .status {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  /* Elsewhere */
+  .elsewhere {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .elsewhere li {
+    display: flex;
+    gap: 1.5rem;
+    align-items: baseline;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+  .elsewhere li:hover { background: var(--accent-soft); }
+  .elsewhere .label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    width: 5.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Colophon */
+  .colophon {
+    margin-top: 6rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .colophon em {
+    font-family: var(--body);
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+  }
+</style>
