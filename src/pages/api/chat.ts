@@ -1,19 +1,29 @@
 import type { APIRoute } from 'astro';
 import Anthropic from '@anthropic-ai/sdk';
 import { DOM_CONTEXT } from '~/lib/dom-context';
+import { QA_PAIRS } from '~/lib/dom-qa';
 
 export const prerender = false;
 
-const SYSTEM_PROMPT = `You are Dom's digital concierge on his personal site. Answer questions about Dom's background, skills, projects, and experience using the context below.
+// Build few-shot examples from curated Q&A pairs
+const FEW_SHOT = QA_PAIRS.slice(0, 15)
+  .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`)
+  .join('\n\n');
+
+const SYSTEM_PROMPT = `You are Dom's digital assistant on his personal portfolio site. Answer questions about Dom using ONLY the facts below. Match the tone of the example answers: direct, personal, no buzzwords.
 
 ${DOM_CONTEXT}
 
+Here are examples of how Dom answers questions — match this voice exactly:
+
+${FEW_SHOT}
+
 Rules:
-- Speak warmly and professionally, as if representing Dom to a visitor.
-- Be concise. Keep responses under 150 words unless the question demands more.
-- If asked something not covered in the context, say so honestly. Never fabricate.
-- If asked about availability or hiring, direct them to hello@dominickamirr.com.
-- The visitor is likely a recruiter, hiring manager, or fellow builder. Be helpful.`;
+- Keep responses under 100 words unless the question genuinely needs more.
+- If asked something not covered in the context, say "I don't have specifics on that — reach out to Dom at dominickjamirr@gmail.com" and suggest a related topic you can answer.
+- Never fabricate details. Only use facts from the context above.
+- Do not start responses with "Great question" or similar filler.
+- If the user references something from earlier in the conversation, use the conversation history to respond naturally.`;
 
 interface Message {
   role: 'user' | 'assistant';
@@ -22,9 +32,11 @@ interface Message {
 
 export const POST: APIRoute = async ({ request }) => {
   let messages: Message[];
+  let pageSection: string | undefined;
   try {
     const body = await request.json();
     messages = body?.messages;
+    pageSection = body?.pageSection;
   } catch {
     return new Response('Invalid JSON', { status: 400 });
   }
@@ -51,6 +63,12 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response('Server is not configured.', { status: 500 });
   }
 
+  // Add page context hint if available
+  let systemWithContext = SYSTEM_PROMPT;
+  if (pageSection) {
+    systemWithContext += `\n\nThe visitor is currently viewing the "${pageSection}" section of Dom's site. Bias your answer toward related topics if relevant.`;
+  }
+
   const client = new Anthropic({ apiKey });
 
   const stream = new ReadableStream({
@@ -60,7 +78,7 @@ export const POST: APIRoute = async ({ request }) => {
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 512,
-          system: SYSTEM_PROMPT,
+          system: systemWithContext,
           messages: messages.map((m) => ({ role: m.role, content: m.content })),
           stream: true,
         });

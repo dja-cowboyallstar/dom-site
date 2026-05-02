@@ -1,8 +1,9 @@
 ---
-import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
+import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
 ---
 <div class="ask-dom" id="ask-dom">
-  <button class="ask-dom-trigger" id="ask-dom-trigger" aria-label="Learn more about Dom" onclick="document.getElementById('ask-dom-panel').hidden=false;this.classList.add('open')">
+  <button class="ask-dom-trigger" id="ask-dom-trigger" aria-label="Learn more about Dom"
+    onclick="document.getElementById('ask-dom-panel').hidden=false;this.classList.add('open');document.getElementById('ask-dom-input')?.focus()">
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
@@ -11,7 +12,8 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
   <div class="ask-dom-panel" id="ask-dom-panel" hidden>
     <div class="panel-header">
       <span class="panel-title">Learn more about Dom</span>
-      <button class="panel-close" id="ask-dom-close" type="button" aria-label="Close" onclick="document.getElementById('ask-dom-panel').hidden=true;document.getElementById('ask-dom-trigger').classList.remove('open')">
+      <button class="panel-close" id="ask-dom-close" type="button" aria-label="Close"
+        onclick="document.getElementById('ask-dom-panel').hidden=true;document.getElementById('ask-dom-trigger').classList.remove('open')">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="pointer-events:none;">
           <path d="M4 4l8 8M12 4l-8 8"/>
         </svg>
@@ -44,28 +46,43 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
   </div>
 </div>
 
-<script define:vars={{ qaData: JSON.stringify(QA_PAIRS), fallback: FALLBACK_RESPONSE, suggestions: SUGGESTED_QUESTIONS }}>
-  window.__domQA = { pairs: JSON.parse(qaData), fallback, suggestions };
+<script define:vars={{ qaData: JSON.stringify(QA_PAIRS), suggestionsData: JSON.stringify(SUGGESTED_QUESTIONS), followUpsData: JSON.stringify(FOLLOW_UPS) }}>
+  window.__domQA = {
+    pairs: JSON.parse(qaData),
+    suggestions: JSON.parse(suggestionsData),
+    followUps: JSON.parse(followUpsData),
+  };
 </script>
 
 <script>
-  function init() {
-    const trigger = document.getElementById('ask-dom-trigger') as HTMLButtonElement;
-    const panel = document.getElementById('ask-dom-panel') as HTMLDivElement;
-    const close = document.getElementById('ask-dom-close') as HTMLButtonElement;
+  function initAskDom() {
     const form = document.getElementById('ask-dom-form') as HTMLFormElement;
     const input = document.getElementById('ask-dom-input') as HTMLTextAreaElement;
     const submit = document.getElementById('ask-dom-submit') as HTMLButtonElement;
     const messagesEl = document.getElementById('ask-dom-messages') as HTMLDivElement;
     const suggestionsEl = document.getElementById('ask-dom-suggestions') as HTMLDivElement;
 
-    if (!trigger || !panel) return;
+    if (!form || !messagesEl) return;
 
     const qa = (window as any).__domQA;
+    let history: Array<{ role: string; content: string }> = [];
 
-    // ─── Matching logic ──────────────────────────────
-    function findMatch(input: string) {
-      const normalized = input.toLowerCase().replace(/[?!.,]/g, '').trim();
+    // ─── Detect current page section ────────────────
+    function getPageSection(): string | undefined {
+      const sections = document.querySelectorAll('section[id]');
+      let current: string | undefined;
+      for (const section of sections) {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= window.innerHeight / 2) {
+          current = section.id;
+        }
+      }
+      return current;
+    }
+
+    // ─── Keyword matching ───────────────────────────
+    function findMatch(q: string) {
+      const normalized = q.toLowerCase().replace(/[?!.,]/g, '').trim();
       const words = normalized.split(/\s+/);
       let bestMatch: any = null;
       let bestScore = 0;
@@ -90,38 +107,30 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
       return bestScore >= 1.5 ? bestMatch : null;
     }
 
-    // ─── Render markdown-lite ────────────────────────
+    // ─── Render markdown-lite ───────────────────────
     const render = (text: string) => {
       const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return esc(text)
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\n• /g, '<br/>• ')
+        .replace(/\n- /g, '<br/>• ')
         .replace(/\n\n/g, '</p><p>')
         .replace(/\n/g, '<br/>');
     };
 
     // ─── Typing animation ───────────────────────────
-    function typeResponse(bubble: HTMLDivElement, text: string) {
-      return new Promise<void>((resolve) => {
-        let i = 0;
-        const rendered = render(text);
-        // Show full text but reveal character by character
+    function typeResponse(bubble: HTMLDivElement, text: string): Promise<void> {
+      return new Promise((resolve) => {
         const words = text.split(' ');
         let shown = '';
         let wordIdx = 0;
-
         const tick = () => {
           if (wordIdx < words.length) {
             shown += (wordIdx > 0 ? ' ' : '') + words[wordIdx];
             wordIdx++;
             bubble.innerHTML = `<p>${render(shown)}</p>`;
             messagesEl.scrollTop = messagesEl.scrollHeight;
-            // 2-4 words at a time for natural feel
-            if (wordIdx % 3 === 0) {
-              setTimeout(tick, 40);
-            } else {
-              setTimeout(tick, 15);
-            }
+            setTimeout(tick, wordIdx % 3 === 0 ? 40 : 15);
           } else {
             bubble.innerHTML = `<p>${render(shown)}</p>`;
             messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -132,33 +141,69 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
       });
     }
 
-    // ─── Toggle panel ───────────────────────────────
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !panel.hidden) {
-        panel.hidden = true;
-        trigger.classList.remove('open');
-      }
-    });
+    // ─── Show follow-up suggestions ─────────────────
+    function showFollowUps(category?: string) {
+      const questions = category && qa.followUps[category]
+        ? qa.followUps[category]
+        : qa.suggestions.slice(0, 2);
 
-    // ─── Auto-resize ────────────────────────────────
-    input?.addEventListener('input', () => {
-      input.style.height = 'auto';
-      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
-    });
+      const container = document.createElement('div');
+      container.className = 'suggestions';
+      questions.forEach((q: string) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'suggestion';
+        btn.textContent = q;
+        btn.addEventListener('click', () => ask(q));
+        container.appendChild(btn);
+      });
+      messagesEl.appendChild(container);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
 
-    input?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        form?.requestSubmit();
+    // ─── Stream from Claude API ─────────────────────
+    async function streamFromAPI(bubble: HTMLDivElement, q: string): Promise<string> {
+      history.push({ role: 'user', content: q });
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: history,
+          pageSection: getPageSection(),
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        const answer = 'I couldn\'t process that right now. Try asking about Dom\'s background, projects, or skills.';
+        bubble.innerHTML = `<p>${render(answer)}</p>`;
+        return answer;
       }
-    });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        bubble.innerHTML = `<p>${render(acc)}</p>`;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      history.push({ role: 'assistant', content: acc });
+      return acc;
+    }
 
     // ─── Handle question ────────────────────────────
     async function ask(q: string) {
-      // Hide suggestions after first question
       if (suggestionsEl) suggestionsEl.hidden = true;
 
-      // Add user bubble
+      // Remove any existing follow-up suggestions
+      messagesEl.querySelectorAll('.suggestions:not(#ask-dom-suggestions)').forEach((el) => el.remove());
+
+      // User bubble
       const userBubble = document.createElement('div');
       userBubble.className = 'msg user';
       userBubble.innerHTML = `<p>${render(q)}</p>`;
@@ -169,48 +214,63 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
       submit.disabled = true;
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
-      // Add assistant bubble
+      // Assistant bubble
       const asstBubble = document.createElement('div');
       asstBubble.className = 'msg assistant';
       asstBubble.innerHTML = '<p class="thinking">...</p>';
       messagesEl.appendChild(asstBubble);
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
-      // Brief pause for natural feel
-      await new Promise((r) => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 250));
 
-      // Find match
+      // Try keyword match first
       const match = findMatch(q);
-      const answer = match ? match.answer : qa.fallback;
 
-      await typeResponse(asstBubble, answer);
-
-      // If fallback, show suggestions again
-      if (!match) {
-        const newSuggestions = document.createElement('div');
-        newSuggestions.className = 'suggestions';
-        qa.suggestions.forEach((s: string) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'suggestion';
-          btn.textContent = s;
-          btn.addEventListener('click', () => ask(s));
-          newSuggestions.appendChild(btn);
-        });
-        messagesEl.appendChild(newSuggestions);
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+      if (match) {
+        // Curated answer — instant, accurate
+        await typeResponse(asstBubble, match.answer);
+        history.push({ role: 'user', content: q });
+        history.push({ role: 'assistant', content: match.answer });
+        showFollowUps(match.category);
+      } else {
+        // Fall back to Claude API with full context
+        await streamFromAPI(asstBubble, q);
+        showFollowUps();
       }
 
       submit.disabled = false;
     }
 
-    // ─── Suggestion clicks ──────────────────────────
+    // ─── Auto-resize ────────────────────────────────
+    input?.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    });
+
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    // Escape to close
+    document.addEventListener('keydown', (e) => {
+      const panel = document.getElementById('ask-dom-panel');
+      const trigger = document.getElementById('ask-dom-trigger');
+      if (e.key === 'Escape' && panel && !panel.hidden) {
+        panel.hidden = true;
+        trigger?.classList.remove('open');
+      }
+    });
+
+    // Suggestion clicks
     suggestionsEl?.querySelectorAll<HTMLButtonElement>('.suggestion').forEach((btn) => {
       btn.addEventListener('click', () => ask(btn.dataset.q || btn.textContent || ''));
     });
 
-    // ─── Form submit ────────────────────────────────
-    form?.addEventListener('submit', (e) => {
+    // Form submit
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       const q = input.value.trim();
       if (!q) return;
@@ -218,9 +278,8 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
     });
   }
 
-  // Run on initial load and after view transitions
-  init();
-  document.addEventListener('astro:after-swap', init);
+  initAskDom();
+  document.addEventListener('astro:after-swap', initAskDom);
 </script>
 
 <style>
@@ -344,14 +403,11 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FALLBACK_RESPONSE } from '~/lib/dom-qa';
     animation: pulse 1.4s ease-in-out infinite;
   }
 
-  .msg .error { color: var(--accent); }
-
   @keyframes pulse {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
   }
 
-  /* Suggestions */
   .suggestions {
     display: flex;
     flex-wrap: wrap;

@@ -211,7 +211,7 @@ export const QA_PAIRS: QAPair[] = [
     category: 'meta',
     keywords: ['chat', 'bot', 'this', 'talking to', 'are you ai'],
     question: 'Am I talking to AI?',
-    answer: 'You\'re reading curated responses that Dom wrote and reviewed — not a live AI model. This is intentional. The answers are accurate because they were written by a human, not generated on the fly. If you want to see live AI, try the Ask Abacus demo above.',
+    answer: 'This chat uses a hybrid approach. Common questions match against curated answers Dom wrote for accuracy and speed. For anything else, it falls back to Claude with Dom\'s background as context. Both paths use the same voice and facts.',
   },
 ];
 
@@ -254,10 +254,13 @@ export const SUGGESTED_QUESTIONS = [
   'Why AI?',
 ];
 
-export const FALLBACK_RESPONSE = `I don't have a specific answer for that one. Here are some things I can tell you about:
-
-• **My background** — career path, experience, skills
-• **My work** — DualEntry, Abacus, Ascent
-• **How I work** — leadership style, strengths, learning approach
-• **Personal** — hobbies, family, values
-• **Contact** — how to reach me, availability`;
+export const FOLLOW_UPS: Record<string, string[]> = {
+  background: ['What\'s your tech stack?', 'Tell me about his startup experience'],
+  work: ['What has Dom built with AI?', 'How does Dom work?'],
+  projects: ['What do you do at DualEntry?', 'How was this site built?'],
+  skills: ['What has Dom built with AI?', 'Are you open to opportunities?'],
+  style: ['What are some examples?', 'Why AI?'],
+  personal: ['How does Dom work?', 'How can I reach you?'],
+  contact: ['What has Dom built with AI?', 'Tell me about his startup experience'],
+  meta: ['What has Dom built with AI?', 'Why AI?'],
+};
