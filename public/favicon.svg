@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#9B3322"/>
+  <rect width="32" height="32" rx="6" fill="#1A1714"/>
+  <rect x="1" y="1" width="30" height="30" rx="5" fill="none" stroke="#9B3322" stroke-width="1.5"/>
   <text
-    x="16" y="23"
-    font-family="'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
-    font-size="20"
-    font-weight="600"
+    x="16" y="22.5"
+    font-family="'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace"
+    font-size="18"
+    font-weight="500"
     fill="#F8F5EE"
     text-anchor="middle"
-    letter-spacing="-0.02em">D</text>
+    letter-spacing="-0.03em">D</text>
 </svg>
