@@ -353,4 +353,30 @@ const examples = [
     white-space: nowrap;
     border: 0;
   }
+
+  @media (max-width: 600px) {
+    .prompt {
+      flex-direction: column;
+    }
+    #ask-submit {
+      padding: 0.7rem 1rem;
+      justify-content: center;
+      border-radius: 0;
+    }
+    .response :global(pre) {
+      font-size: 0.68rem;
+      padding: 0.75rem;
+      max-width: calc(100vw - 3rem);
+    }
+    .echo {
+      font-size: 0.95rem;
+    }
+    .examples ul {
+      gap: 0.35rem;
+    }
+    .example {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
 </style>
