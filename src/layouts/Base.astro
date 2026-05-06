@@ -19,6 +19,17 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+const SITE_NAME = 'About Dominick Amirr';
+const SITE_URL = 'https://dom-amirr.com/';
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  alternateName: 'Dominick Amirr',
+  url: SITE_URL,
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -38,10 +49,14 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(ogImage, Astro.site)} />
     <meta property="og:url" content={canonical} />
+
+    <!-- Schema.org WebSite — feeds Google's search-result site name -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(websiteSchema)}></script>
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
