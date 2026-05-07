@@ -211,7 +211,7 @@ export const QA_PAIRS: QAPair[] = [
     category: 'meta',
     keywords: ['chat', 'bot', 'this', 'talking to', 'are you ai'],
     question: 'Am I talking to AI?',
-    answer: 'This chat uses a hybrid approach. Common questions match against curated answers Dom wrote for accuracy and speed. For anything else, it falls back to Claude with Dom\'s background as context. Both paths use the same voice and facts.',
+    answer: 'Yes — every message goes to Claude with Dom\'s full background as context. The system prompt encodes his voice, facts, and examples so answers stay accurate and personal.',
   },
 ];
 

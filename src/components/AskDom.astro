@@ -1,5 +1,5 @@
 ---
-import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
+import { SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
 ---
 <div class="ask-dom" id="ask-dom">
   <button class="ask-dom-trigger" id="ask-dom-trigger" aria-label="Learn more about Dom"
@@ -46,9 +46,8 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
   </div>
 </div>
 
-<script define:vars={{ qaData: JSON.stringify(QA_PAIRS), suggestionsData: JSON.stringify(SUGGESTED_QUESTIONS), followUpsData: JSON.stringify(FOLLOW_UPS) }}>
+<script define:vars={{ suggestionsData: JSON.stringify(SUGGESTED_QUESTIONS), followUpsData: JSON.stringify(FOLLOW_UPS) }}>
   window.__domQA = {
-    pairs: JSON.parse(qaData),
     suggestions: JSON.parse(suggestionsData),
     followUps: JSON.parse(followUpsData),
   };
@@ -80,65 +79,46 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
       return current;
     }
 
-    // ─── Keyword matching ───────────────────────────
-    function findMatch(q: string) {
-      const normalized = q.toLowerCase().replace(/[?!.,]/g, '').trim();
-      const words = normalized.split(/\s+/);
-      let bestMatch: any = null;
-      let bestScore = 0;
+    // ─── Markdown renderer ──────────────────────────
+    function renderMarkdown(text: string): string {
+      const esc = (s: string) =>
+        s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-      for (const pair of qa.pairs) {
-        let score = 0;
-        for (const keyword of pair.keywords) {
-          if (normalized.includes(keyword)) {
-            score += keyword.split(/\s+/).length;
-          }
-        }
-        for (const word of words) {
-          if (pair.keywords.includes(word)) {
-            score += 0.5;
-          }
-        }
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = pair;
-        }
-      }
-      return bestScore >= 1.5 ? bestMatch : null;
-    }
+      const inline = (s: string) =>
+        s
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>');
 
-    // ─── Render markdown-lite ───────────────────────
-    const render = (text: string) => {
-      const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return esc(text)
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n• /g, '<br/>• ')
-        .replace(/\n- /g, '<br/>• ')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br/>');
-    };
+      const blocks = text.split(/\n{2,}/);
 
-    // ─── Typing animation ───────────────────────────
-    function typeResponse(bubble: HTMLDivElement, text: string): Promise<void> {
-      return new Promise((resolve) => {
-        const words = text.split(' ');
-        let shown = '';
-        let wordIdx = 0;
-        const tick = () => {
-          if (wordIdx < words.length) {
-            shown += (wordIdx > 0 ? ' ' : '') + words[wordIdx];
-            wordIdx++;
-            bubble.innerHTML = `<p>${render(shown)}</p>`;
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-            setTimeout(tick, wordIdx % 3 === 0 ? 40 : 15);
-          } else {
-            bubble.innerHTML = `<p>${render(shown)}</p>`;
-            messagesEl.scrollTop = messagesEl.scrollHeight;
-            resolve();
+      return blocks
+        .map((block) => {
+          const trimmed = block.trim();
+          if (!trimmed) return '';
+
+          const lines = trimmed.split('\n');
+
+          if (lines.every((l) => /^[-•*]\s/.test(l.trim()) || !l.trim())) {
+            const items = lines
+              .filter((l) => l.trim())
+              .map((l) => `<li>${inline(esc(l.replace(/^[-•*]\s+/, '')))}</li>`)
+              .join('');
+            return `<ul>${items}</ul>`;
           }
-        };
-        tick();
-      });
+
+          if (lines.every((l) => /^\d+\.\s/.test(l.trim()) || !l.trim())) {
+            const items = lines
+              .filter((l) => l.trim())
+              .map((l) => `<li>${inline(esc(l.replace(/^\d+\.\s+/, '')))}</li>`)
+              .join('');
+            return `<ol>${items}</ol>`;
+          }
+
+          return `<p>${inline(esc(trimmed).replace(/\n/g, '<br/>'))}</p>`;
+        })
+        .filter(Boolean)
+        .join('');
     }
 
     // ─── Show follow-up suggestions ─────────────────
@@ -175,8 +155,8 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
       });
 
       if (!res.ok || !res.body) {
-        const answer = 'I couldn\'t process that right now. Try asking about Dom\'s background, projects, or skills.';
-        bubble.innerHTML = `<p>${render(answer)}</p>`;
+        const answer = "I couldn't process that right now. Try asking about Dom's background, projects, or skills.";
+        bubble.innerHTML = renderMarkdown(answer);
         return answer;
       }
 
@@ -188,7 +168,7 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        bubble.innerHTML = `<p>${render(acc)}</p>`;
+        bubble.innerHTML = renderMarkdown(acc);
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
 
@@ -206,7 +186,7 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
       // User bubble
       const userBubble = document.createElement('div');
       userBubble.className = 'msg user';
-      userBubble.innerHTML = `<p>${render(q)}</p>`;
+      userBubble.innerHTML = renderMarkdown(q);
       messagesEl.appendChild(userBubble);
 
       input.value = '';
@@ -223,20 +203,8 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
 
       await new Promise((r) => setTimeout(r, 250));
 
-      // Try keyword match first
-      const match = findMatch(q);
-
-      if (match) {
-        // Curated answer — instant, accurate
-        await typeResponse(asstBubble, match.answer);
-        history.push({ role: 'user', content: q });
-        history.push({ role: 'assistant', content: match.answer });
-        showFollowUps(match.category);
-      } else {
-        // Fall back to Claude API with full context
-        await streamFromAPI(asstBubble, q);
-        showFollowUps();
-      }
+      await streamFromAPI(asstBubble, q);
+      showFollowUps();
 
       submit.disabled = false;
     }
@@ -379,6 +347,25 @@ import { QA_PAIRS, SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
   }
 
   .msg p { margin: 0; }
+  .msg p + p { margin-top: 0.4rem; }
+
+  .msg ul, .msg ol {
+    margin: 0.2rem 0;
+    padding-left: 1.2rem;
+  }
+
+  .msg li {
+    margin-bottom: 0.2rem;
+    line-height: 1.5;
+  }
+
+  .msg :global(code) {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: rgba(0,0,0,0.06);
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+  }
 
   .msg.user {
     align-self: flex-end;
