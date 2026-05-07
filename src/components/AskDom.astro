@@ -341,52 +341,93 @@ import { SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
   }
 
   .msg {
-    max-width: 85%;
-    font-size: 0.82rem;
+    max-width: 88%;
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+
+  /* Paragraphs */
+  .msg p { margin: 0; }
+  .msg p + p { margin-top: 0.3rem; }
+
+  /* Lists — custom markers, no browser defaults */
+  .msg ul, .msg ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+  }
+
+  .msg p + ul, .msg p + ol { margin-top: 0.35rem; }
+  .msg ul + p, .msg ol + p { margin-top: 0.35rem; }
+
+  .msg li {
+    position: relative;
+    padding-left: 0.85rem;
     line-height: 1.45;
   }
 
-  .msg p { margin: 0; }
-  .msg p + p { margin-top: 0.35rem; }
-
-  .msg ul, .msg ol {
-    margin: 0.25rem 0;
-    padding-left: 1.1rem;
+  /* Em-dash bullet for unordered */
+  .msg ul li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 0.8em;
+    line-height: 1.6;
   }
 
-  .msg p + ul, .msg p + ol { margin-top: 0.3rem; }
-  .msg ul + p, .msg ol + p { margin-top: 0.3rem; }
+  /* Mono counter for ordered */
+  .msg ol { counter-reset: li; }
+  .msg ol li { counter-increment: li; }
+  .msg ol li::before {
+    content: counter(li) '.';
+    position: absolute;
+    left: 0;
+    color: var(--ink-mute);
+    font-family: var(--mono);
+    font-size: 0.68em;
+    line-height: 1.9;
+  }
 
-  .msg li {
-    margin-bottom: 0.18rem;
-    line-height: 1.4;
+  /* Inline elements */
+  .msg :global(strong) {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .msg :global(em) {
+    font-style: italic;
+    color: var(--ink-soft);
   }
 
   .msg :global(code) {
     font-family: var(--mono);
-    font-size: 0.82em;
-    background: rgba(0,0,0,0.06);
-    padding: 0.1em 0.35em;
-    border-radius: 3px;
+    font-size: 0.78em;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 0.1em 0.3em;
+    border-radius: 2px;
   }
 
+  /* Bubbles */
   .msg.user {
     align-self: flex-end;
     background: var(--accent);
     color: var(--bg);
-    border-radius: 12px 12px 2px 12px;
-    padding: 0.5rem 0.8rem;
+    border-radius: 10px 10px 2px 10px;
+    padding: 0.45rem 0.75rem;
   }
 
   .msg.assistant {
     align-self: flex-start;
     background: var(--bg-shade);
+    border: 1px solid var(--rule-soft);
     color: var(--ink);
-    border-radius: 12px 12px 12px 2px;
-    padding: 0.5rem 0.8rem;
+    border-radius: 2px 10px 10px 10px;
+    padding: 0.5rem 0.75rem;
   }
-
-  .msg :global(strong) { font-weight: 600; }
 
   .msg .thinking {
     color: var(--ink-mute);
