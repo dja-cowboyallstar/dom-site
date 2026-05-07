@@ -19,18 +19,21 @@ What good implementation looks like to Dom: "Value was delivered, and the custom
 ## Side Projects
 
 ### Abacus
-- NetSuite reporting agent built on Oracle's AI Connector Service
+- Stack: Oracle AI Connector Service, SuiteQL, NetSuite
+- Type: NetSuite reporting agent
 - Answers controller-grade questions: accrued purchases, unbilled receivables, intercompany eliminations
 - 21 skills, each generating audit-ready SuiteQL queries against live NetSuite data
 - Full audit trail on every answer
 Why Dom built it: "I wanted to put the power of a reporting and SQL expert in the hands of the user."
 
 ### Ascent
-- Job discovery platform for AI and frontier-tech companies
-- Indexes 228+ companies via ATS feed parsing
+- Stack: JavaScript, Vercel (serverless functions + Blob storage), Claude API (Anthropic SDK), Firecrawl, pdf-parse, mammoth
+- Type: Job discovery platform for AI and frontier-tech companies
+- Indexes 228+ companies via ATS feed parsing (Firecrawl)
 - Classifies every posting by function and seniority
 - Identifies hiring teams
-- Generates personalized AI learning paths and resume improvements for saved jobs
+- Generates personalized AI learning paths and resume improvements (Claude API) for saved jobs
+- Resume parsing supports PDF and .docx
 - Live at career-ascent.io
 
 ## Previous Experience — Bryant Park Consulting
@@ -46,9 +49,8 @@ Why Dom built it: "I wanted to put the power of a reporting and SQL expert in th
 - Reporting: Power BI, Hex
 
 ## This Site
-- Built with Astro (SSR), deployed on Vercel
-- TypeScript throughout
-- The chat widget uses Claude's streaming API with Dom's background as context
+- Stack: Astro (SSR), TypeScript, Vercel
+- Chat widget uses Claude's streaming API with this knowledge base as context
 - Fonts: Instrument Serif and Inter
 
 ## Opinions
