@@ -4,14 +4,14 @@
    Design tokens — light (default) + dark/evening
    ───────────────────────────────────────────────────────────── */
 :root {
-  --bg:        #F8F5EE;
-  --bg-shade:  #F0EBE0;
-  --bg-elevated: #FFFFFF;
+  --bg:        #F5ECD3;
+  --bg-shade:  #ECE3C5;
+  --bg-elevated: #FBF5E4;
   --ink:       #2C2825;
   --ink-soft:  #5A544C;
   --ink-mute:  #9A948A;
-  --rule:      #DDD7C7;
-  --rule-soft: #EBE6D8;
+  --rule:      #D8CDB0;
+  --rule-soft: #E5DBBE;
   --accent:    #9B3322;
   --accent-soft: rgba(155, 51, 34, 0.08);
 
