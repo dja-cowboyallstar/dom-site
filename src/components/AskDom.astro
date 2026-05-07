@@ -342,7 +342,7 @@ import { SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
 
   .msg {
     max-width: 88%;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     line-height: 1.5;
   }
 
@@ -369,14 +369,14 @@ import { SUGGESTED_QUESTIONS, FOLLOW_UPS } from '~/lib/dom-qa';
     line-height: 1.45;
   }
 
-  /* Em-dash bullet for unordered */
+  /* Dot bullet for unordered */
   .msg ul li::before {
-    content: '–';
+    content: '·';
     position: absolute;
     left: 0;
-    color: var(--accent);
-    font-size: 0.8em;
-    line-height: 1.6;
+    color: var(--ink-mute);
+    font-size: 1em;
+    line-height: 1.4;
   }
 
   /* Mono counter for ordered */
