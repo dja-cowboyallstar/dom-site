@@ -69,13 +69,13 @@ export const QA_PAIRS: QAPair[] = [
     category: 'projects',
     keywords: ['build', 'built', 'products', 'ship', 'shipped', 'side project', 'built with ai', 'what has dom built'],
     question: 'What has Dom built with AI?',
-    answer: 'Three things: Abacus — a reporting agent that answers controller-grade questions against NetSuite with full audit trails. Ascent — a job discovery platform that indexes 228+ companies and generates AI learning paths. And at DualEntry, I lead AI implementations for enterprise accounting teams. I also built this site, including the chat you\'re using right now.',
+    answer: 'Three things:\n\n- **Abacus** — a reporting agent that answers controller-grade questions against NetSuite with full audit trails.\n- **Ascent** — a job discovery platform that indexes 228+ companies and generates AI learning paths.\n- **DualEntry** — I lead AI implementations for enterprise accounting teams.\n\nI also built this site, including the chat you\'re using right now.',
   },
   {
     category: 'projects',
     keywords: ['examples', 'example', 'show me', 'like what', 'such as', 'specifics', 'proof'],
     question: 'What are some examples?',
-    answer: 'At DualEntry: onboarded the first 20 customers from zero, built the implementation playbook, scaled to 100+ customers. With Abacus: 21 reporting skills that generate audit-ready SuiteQL queries against live NetSuite data. With Ascent: indexes ATS feeds from 228+ companies and matches candidates by function and seniority. At Bryant Park: promoted from Principal Consultant to Engagement Manager in three months.',
+    answer: '- **DualEntry** — onboarded the first 20 customers, built the implementation playbook, scaled to 100+.\n- **Abacus** — 21 reporting skills that generate audit-ready SuiteQL queries against live NetSuite data.\n- **Ascent** — indexes ATS feeds from 228+ companies, matches candidates by function and seniority.\n- **Bryant Park** — promoted from Principal Consultant to Engagement Manager in three months.',
   },
   {
     category: 'work',
@@ -95,7 +95,7 @@ export const QA_PAIRS: QAPair[] = [
     category: 'skills',
     keywords: ['skills', 'tech', 'stack', 'technology', 'tools', 'languages'],
     question: 'What\'s your tech stack?',
-    answer: 'NetSuite, Oracle ADW, Celigo, SuiteQL on the finance side. Claude API, TypeScript, Astro, Vercel on the AI/dev side. Power BI and Hex for reporting. I\'m comfortable across the full stack — I build the integrations, the agents, and the front-end.',
+    answer: 'Finance side:\n- NetSuite, Oracle ADW, Celigo, SuiteQL, Power BI, Hex\n\nAI/dev side:\n- Claude API, TypeScript, Astro, Vercel\n\nI build the integrations, the agents, and the front-end.',
   },
   {
     category: 'skills',
