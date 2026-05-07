@@ -6,6 +6,7 @@ const { showHomeLink = false } = Astro.props;
 
 ---
 <aside class="masthead">
+  <p class="location">New York, New York</p>
   {showHomeLink ? (
     <a href="/" class="name-link">
       <h1 transition:name="dom-name">Dominick Amirr</h1>
@@ -13,12 +14,11 @@ const { showHomeLink = false } = Astro.props;
   ) : (
     <h1 transition:name="dom-name">Dominick Amirr</h1>
   )}
-  <p class="role">Builder, learner, tacos · New York</p>
+  <p class="role">Builder, learner, tacos</p>
   <nav class="masthead-nav">
     <a href="#top">Featured</a>
     <a href="#experience">Experience</a>
     <a href="#testimonials">Testimonials</a>
-    <a href="#numbers">Numbers</a>
     <a href="#about">About</a>
     <a href="#contact">Contact</a>
   </nav>
@@ -53,6 +53,15 @@ const { showHomeLink = false } = Astro.props;
     color: inherit;
   }
   .name-link:hover h1 { color: var(--accent); }
+
+  .location {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 0.75rem;
+  }
 
   .masthead h1 {
     font-family: var(--display);
