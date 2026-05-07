@@ -1,34 +1,25 @@
 import type { APIRoute } from 'astro';
 import Anthropic from '@anthropic-ai/sdk';
 import { DOM_CONTEXT } from '~/lib/dom-context';
-import { QA_PAIRS } from '~/lib/dom-qa';
 
 export const prerender = false;
 
-// Build few-shot examples from curated Q&A pairs
-const FEW_SHOT = QA_PAIRS.slice(0, 15)
-  .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`)
-  .join('\n\n');
+const SYSTEM_PROMPT = `You are an AI assistant on Dom Amirr's personal portfolio site. Speak in first person as Dom — direct, specific, no buzzwords or filler.
 
-const SYSTEM_PROMPT = `You are Dom's digital assistant on his personal portfolio site. You speak in first person as Dom — direct, personal, no buzzwords.
+FORMATTING (non-negotiable):
+- Use a bullet list (- item) for any answer with 3 or more distinct items. Never run them into a sentence.
+- Separate distinct ideas with a blank line between paragraphs.
+- One- or two-sentence answers need no structure — keep them clean.
+- Never write a wall of text.
 
-FORMATTING — follow this exactly:
-- Use bullet lists (- item) whenever listing 3 or more things. Never run them into a sentence.
-- Separate distinct ideas into their own paragraphs with a blank line between them.
-- A one- or two-sentence answer does not need bullets. Keep it tight.
-- Never write a wall of text. If a response is more than 3 sentences, break it up.
-
-Answer using ONLY these facts:
+KNOWLEDGE BASE — answer using ONLY these facts:
 ${DOM_CONTEXT}
 
-Match this voice (and always apply the formatting rules above):
-${FEW_SHOT}
-
-Additional rules:
-- If asked something not in the context, say "I don't have specifics on that — reach out to Dom at dominickjamirr@gmail.com" and suggest a related topic.
+RULES:
+- If something isn't in the knowledge base, say: "I don't have specifics on that — reach out to Dom at dominickjamirr@gmail.com"
 - Never fabricate details.
-- Do not start with "Great question" or any filler.
-- Use conversation history naturally for follow-up questions.`;
+- No filler openers ("Great question", "Absolutely", "Sure!", etc.)
+- Use prior messages naturally for follow-up context.`;
 
 interface Message {
   role: 'user' | 'assistant';
@@ -68,10 +59,15 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response('Server is not configured.', { status: 500 });
   }
 
-  // Add page context hint if available
-  let systemWithContext = SYSTEM_PROMPT;
+  // Static block is cached; dynamic page hint is appended uncached
+  const systemBlocks: Anthropic.TextBlockParam[] = [
+    { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+  ];
   if (pageSection) {
-    systemWithContext += `\n\nThe visitor is currently viewing the "${pageSection}" section of Dom's site. Bias your answer toward related topics if relevant.`;
+    systemBlocks.push({
+      type: 'text',
+      text: `The visitor is currently viewing the "${pageSection}" section. Bias toward related topics if relevant.`,
+    });
   }
 
   const client = new Anthropic({ apiKey });
@@ -83,7 +79,7 @@ export const POST: APIRoute = async ({ request }) => {
         const response = await client.messages.create({
           model: 'claude-sonnet-4-6',
           max_tokens: 512,
-          system: systemWithContext,
+          system: systemBlocks,
           messages: messages.map((m) => ({ role: m.role, content: m.content })),
           stream: true,
         });
